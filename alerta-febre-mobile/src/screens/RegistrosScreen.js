@@ -3,12 +3,12 @@ import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity } from 'react
 import { useIsFocused } from '@react-navigation/native';
 import axios from 'axios';
 
-// ⚠️ IMPORTANTE: TROQUE PELO SEU IP
-const API_URL = 'http://192.168.15.179:3000/registros'; 
+
+const API_URL = 'http://192.168.15.179:3000/registros';
 
 export default function RegistrosScreen({ navigation }) {
   const [lista, setLista] = useState([]);
-  const isFocused = useIsFocused(); // Hook para saber quando voltamos para essa tela
+  const isFocused = useIsFocused();
 
   const carregarRegistros = async () => {
     try {
@@ -20,7 +20,7 @@ export default function RegistrosScreen({ navigation }) {
     }
   };
 
-  // Toda vez que a tela ganha foco, recarrega a lista
+ 
   useEffect(() => {
     if (isFocused) {
       carregarRegistros();
@@ -37,45 +37,57 @@ export default function RegistrosScreen({ navigation }) {
     }
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.titulo}>{item.nome}, {item.idade} anos</Text>
-      <Text style={styles.info}>Temperatura: <Text style={{fontWeight: 'bold'}}>{item.temperatura}°C</Text></Text>
+  const renderItem = ({ item }) => {
+    const formatarEndereco = (end) => {
+      if (!end) return 'Localização não identificada';
       
-      {item.localizacao && (
+      const partes = end.split(',');
+      if (partes.length >= 3) {
+        return `${partes[0]} - ${partes[2]}`;
+      }
+      return partes[0];
+    };
+
+    return (
+      <View style={styles.card}>
+        <Text style={styles.titulo}>{item.nome}, {item.idade} anos</Text>
+        <Text style={styles.info}>Temperatura: <Text style={{fontWeight: 'bold'}}>{item.temperatura}°C</Text></Text>
+
         <Text style={styles.endereco}>
-          📍 {item.localizacao.endereco ? item.localizacao.endereco.split(',')[0] : 'Endereço não disponível'}
+          📍 {item.localizacao && item.localizacao.endereco 
+                ? formatarEndereco(item.localizacao.endereco)
+                : 'Localização não identificada'}
         </Text>
-      )}
-
-      <Text style={styles.info}>Tomou remédio: {item.tomouRemedio.toUpperCase()}</Text>
-
-      <View style={styles.acoes}>
-        <TouchableOpacity 
-          style={[styles.btn, styles.btnEditar]} 
-          onPress={() => navigation.navigate('Editar', { registro: item })}
-        >
-          <Text style={styles.btnTexto}>EDITAR</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.btn, styles.btnExcluir]} 
-          onPress={() => {
-            Alert.alert(
-              'Confirmar Exclusão',
-              `Deseja apagar o registro de ${item.nome}?`,
-              [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Apagar', onPress: () => handleDeletar(item.id), style: 'destructive' }
-              ]
-            );
-          }}
-        >
-          <Text style={[styles.btnTexto, { color: '#fff' }]}>EXCLUIR</Text>
-        </TouchableOpacity>
+  
+        <Text style={styles.info}>Tomou remédio: {item.tomouRemedio.toUpperCase()}</Text>
+  
+        <View style={styles.acoes}>
+          <TouchableOpacity 
+            style={[styles.btn, styles.btnEditar]} 
+            onPress={() => navigation.navigate('Editar', { registro: item })}
+          >
+            <Text style={styles.btnTexto}>EDITAR</Text>
+          </TouchableOpacity>
+  
+          <TouchableOpacity 
+            style={[styles.btn, styles.btnExcluir]} 
+            onPress={() => {
+              Alert.alert(
+                'Confirmar Exclusão',
+                `Deseja apagar o registro de ${item.nome}?`,
+                [
+                  { text: 'Cancelar', style: 'cancel' },
+                  { text: 'Apagar', onPress: () => handleDeletar(item.id), style: 'destructive' }
+                ]
+              );
+            }}
+          >
+            <Text style={[styles.btnTexto, { color: '#fff' }]}>EXCLUIR</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>

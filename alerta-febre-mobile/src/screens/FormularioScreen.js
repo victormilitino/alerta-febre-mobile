@@ -3,8 +3,8 @@ import { View, Text, TextInput, Button, ScrollView, StyleSheet, Alert, Touchable
 import * as Location from 'expo-location';
 import axios from 'axios';
 
-// ⚠️ IMPORTANTE: TROQUE PELO SEU IP
-const API_URL = 'http://192.168.15.179:3000/registros'; 
+
+const API_URL = 'http://192.168.15.179:3000/registros';
 
 export default function FormularioScreen({ navigation }) {
   const [nome, setNome] = useState('');
@@ -24,10 +24,11 @@ export default function FormularioScreen({ navigation }) {
 
     setLoading(true);
 
-    // 1. Permissão e Captura de Localização
+
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permissão negada', 'Não foi possível acessar a localização.');
+      Alert.alert('Permissão negada', 'Não foi possível acessar a localização. O registro será salvo sem local.');
+
       setLoading(false);
       return;
     }
@@ -35,17 +36,28 @@ export default function FormularioScreen({ navigation }) {
     let location = await Location.getCurrentPositionAsync({});
     const { latitude, longitude } = location.coords;
 
-    // 2. Geocodificação Reversa (Transformar lat/long em endereço)
     let enderecoFormatado = null;
     try {
-      const responseGeo = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`);
+
+      const responseGeo = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
+        {
+          headers: {
+            'User-Agent': 'AlertaFebreApp/1.0', 
+            'Accept-Language': 'pt-BR'
+          }
+        }
+      );
+      
       const dataGeo = await responseGeo.json();
-      if (dataGeo.display_name) enderecoFormatado = dataGeo.display_name;
+      if (dataGeo.display_name) {
+        enderecoFormatado = dataGeo.display_name;
+      }
     } catch (e) {
       console.log("Erro ao buscar endereço:", e);
     }
 
-    // 3. Objeto para salvar
+
     const novoRegistro = {
       nome,
       idade,
@@ -55,18 +67,17 @@ export default function FormularioScreen({ navigation }) {
       localizacao: { latitude, longitude, endereco: enderecoFormatado }
     };
 
-    // 4. Envio para o Backend
     try {
       await axios.post(API_URL, novoRegistro);
       Alert.alert('Sucesso', 'Registro salvo com sucesso!');
       
-      // Limpar campos
+
       setNome(''); setIdade(''); setTemperatura(''); setTomouRemedio(null);
       setNomeRemedio(''); setDosagem(''); setHora('');
       
     } catch (error) {
       console.error(error);
-      Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+      Alert.alert('Erro', 'Não foi possível conectar ao servidor. Verifique o IP.');
     } finally {
       setLoading(false);
     }
@@ -116,7 +127,6 @@ export default function FormularioScreen({ navigation }) {
   );
 }
 
-// Reutilize os styles do EditarRegistroScreen ou crie novos aqui
 const styles = StyleSheet.create({
   container: { padding: 20, backgroundColor: '#fff', flexGrow: 1 },
   label: { fontSize: 16, fontWeight: 'bold', marginTop: 15 },

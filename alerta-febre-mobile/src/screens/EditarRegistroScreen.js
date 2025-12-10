@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 
-// ⚠️ IMPORTANTE: TROQUE PELO SEU IP
+
 const API_URL = 'http://192.168.15.179:3000/registros'; 
 
 export default function EditarRegistroScreen({ route, navigation }) {
-  // Recebemos o registro vindo da tela anterior via params
+
   const { registro } = route.params;
 
   const [nome, setNome] = useState(registro.nome);
@@ -25,13 +25,13 @@ export default function EditarRegistroScreen({ route, navigation }) {
       temperatura,
       tomouRemedio,
       remedio: tomouRemedio === 'sim' ? { nome: nomeRemedio, dosagem, hora } : null,
-      localizacao: registro.localizacao // Mantém a localização original
+      localizacao: registro.localizacao 
     };
 
     try {
       await axios.put(`${API_URL}/${registro.id}`, dadosAtualizados);
       Alert.alert('Sucesso', 'Registro atualizado!');
-      navigation.navigate('Registros', { refresh: true }); // Volta para a lista
+      navigation.navigate('Registros', { refresh: true });
     } catch (error) {
       console.error(error);
       Alert.alert('Erro', 'Falha ao atualizar registro.');
