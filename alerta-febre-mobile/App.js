@@ -1,8 +1,6 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
-// Certifique-se de que os caminhos estão certos
 import FormularioScreen from './src/screens/FormularioScreen';
 import RegistrosScreen from './src/screens/RegistrosScreen';
 import EditarRegistroScreen from './src/screens/EditarRegistroScreen';
